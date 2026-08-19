@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
+  <defs>
+    <linearGradient id="portraitBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#241d1a" />
+      <stop offset="60%" stop-color="#141416" />
+      <stop offset="100%" stop-color="#09090b" />
+    </linearGradient>
+    <linearGradient id="shadowGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="rgba(0,0,0,0.8)" />
+      <stop offset="100%" stop-color="rgba(0,0,0,0)" />
+    </linearGradient>
+  </defs>
+  <rect width="900" height="1200" fill="url(#portraitBg)" />
+  
+  <!-- Stylized Cinematic Portrait Silhouette -->
+  <path d="M 450 280 C 340 280 260 360 260 480 C 260 570 320 640 400 670 C 250 710 140 840 120 1060 L 780 1060 C 760 840 650 710 500 670 C 580 640 640 570 640 480 C 640 360 560 280 450 280 Z" fill="rgba(255,255,255,0.06)" />
+  
+  <rect width="900" height="1200" fill="url(#shadowGrad)" />
+  
+  <text x="450" y="980" font-family="'Space Grotesk', sans-serif" font-size="36" font-weight="900" fill="#F5F3EE" text-anchor="middle" letter-spacing="4">RAUNAK CHHABRA</text>
+  <text x="450" y="1030" font-family="'Playfair Display', serif" font-size="22" font-style="italic" fill="#FF6A00" text-anchor="middle">Filmmaker &amp; Visual Editor</text>
+  <text x="450" y="1080" font-family="sans-serif" font-size="14" fill="rgba(255,255,255,0.4)" text-anchor="middle">/public/images/profile/raunak.jpg</text>
+</svg>
