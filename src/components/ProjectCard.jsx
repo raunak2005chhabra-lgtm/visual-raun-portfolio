@@ -4,30 +4,36 @@ export const ProjectCard = React.memo(({ project, onClick, onCursorHover, onCurs
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [parallaxY, setParallaxY] = useState(0);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const cardRef = useRef(null);
   const videoRef = useRef(null);
-  const hasLoadedRef = useRef(false);
+  const hasRequestedVideoRef = useRef(false);
 
   const videoSrc = project.localVideo || project.videoUrl;
 
   const prevVideoSrcRef = useRef(videoSrc);
   if (prevVideoSrcRef.current !== videoSrc) {
     prevVideoSrcRef.current = videoSrc;
-    hasLoadedRef.current = false;
+    hasRequestedVideoRef.current = false;
+    setVideoLoaded(false);
   }
 
-  // Controlled IntersectionObservers for rolling video preload (1000px margin) and playback (0.35 threshold)
+  // Controlled IntersectionObservers for true lazy video loading (1000px margin) and playback (0.35 threshold)
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
 
-    // 1. Preload Observer: triggers ~1000px before entering viewport to load video data early
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`OBSERVER CREATED: ${project.id}`);
+    }
+
+    // 1. Preload Observer: triggers ~1000px before entering viewport to assign MP4 src ONCE
     const preloadObserver = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          if (videoRef.current && !hasLoadedRef.current) {
-            hasLoadedRef.current = true;
-            videoRef.current.load();
+          if (!hasRequestedVideoRef.current) {
+            hasRequestedVideoRef.current = true;
+            setVideoLoaded(true);
           }
         }
       },
@@ -42,17 +48,15 @@ export const ProjectCard = React.memo(({ project, onClick, onCursorHover, onCurs
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          if (videoRef.current) {
-            // Ensure video.load() was called if preload didn't catch it
-            if (!hasLoadedRef.current) {
-              hasLoadedRef.current = true;
-              videoRef.current.load();
-            }
-            if (videoRef.current.paused) {
-              const playPromise = videoRef.current.play();
-              if (playPromise !== undefined) {
-                playPromise.catch(() => {});
-              }
+          // Fallback check to ensure src is assigned if preload missed it
+          if (!hasRequestedVideoRef.current) {
+            hasRequestedVideoRef.current = true;
+            setVideoLoaded(true);
+          }
+          if (videoRef.current && videoRef.current.paused) {
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {});
             }
           }
         } else {
@@ -78,7 +82,7 @@ export const ProjectCard = React.memo(({ project, onClick, onCursorHover, onCurs
         videoRef.current.pause();
       }
     };
-  }, [videoSrc]);
+  }, [videoSrc, project.id]);
 
   // Subtle scroll parallax for media INSIDE fixed 16:9 or 9:16 frame (3-8px)
   useEffect(() => {
@@ -159,9 +163,8 @@ export const ProjectCard = React.memo(({ project, onClick, onCursorHover, onCurs
         {videoSrc && (
           <video
             ref={videoRef}
-            src={videoSrc}
+            src={videoLoaded ? videoSrc : undefined}
             poster={posterSrc}
-            preload="metadata"
             muted
             loop
             playsInline
@@ -172,10 +175,10 @@ export const ProjectCard = React.memo(({ project, onClick, onCursorHover, onCurs
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              opacity: 1,
+              opacity: videoLoaded ? 1 : 0,
               pointerEvents: 'none',
               transform: `translate3d(0, ${parallaxY}px, 0) ${isHovered ? 'scale(1.05)' : 'scale(1.02)'}`,
-              transition: 'transform 0.3s ease-out'
+              transition: 'transform 0.3s ease-out, opacity 0.3s ease-in'
             }}
             onError={(e) => {
               e.target.style.display = 'none';
