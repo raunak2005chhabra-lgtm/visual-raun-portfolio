@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { IntroStatement } from './components/IntroStatement';
@@ -88,6 +89,9 @@ export function App() {
 
       {/* Global Interactive Custom Cursor */}
       <CustomCursor cursorState={cursorState} />
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
 
       {/* Navigation Header */}
       <Navbar
