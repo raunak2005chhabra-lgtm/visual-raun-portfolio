@@ -27,4 +27,6 @@ dist-ssr
 optimized-videos/
 video-backup/
 optimize-videos.bat
+encode-full-videos.bat
+
 

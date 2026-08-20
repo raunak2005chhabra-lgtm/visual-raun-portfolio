@@ -41,9 +41,9 @@ export const ProjectModal = ({ project, onClose, onCursorHover, onCursorLeave })
         <div className="modal-player-container">
           {(project.localVideo || project.videoUrl) ? (
             <video
-              src={project.localVideo || project.videoUrl}
+              src={(project.localVideo || project.videoUrl).replace('/videos/projects/', '/videos/full-projects/')}
               controls
-              autoPlay
+              playsInline
               className="modal-video-player"
               poster={project.localThumbnail || project.thumbnail}
             />
