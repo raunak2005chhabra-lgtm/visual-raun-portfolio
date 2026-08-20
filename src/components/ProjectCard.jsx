@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export const ProjectCard = ({ project, onClick, onCursorHover, onCursorLeave }) => {
+export const ProjectCard = React.memo(({ project, onClick, onCursorHover, onCursorLeave }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [parallaxY, setParallaxY] = useState(0);
@@ -16,36 +16,68 @@ export const ProjectCard = ({ project, onClick, onCursorHover, onCursorLeave }) 
     hasLoadedRef.current = false;
   }
 
-  // Controlled IntersectionObserver for video loading & playback based on viewport visibility
+  // Controlled IntersectionObservers for rolling video preload (1000px margin) and playback (0.35 threshold)
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    const el = cardRef.current;
+    if (!el) return;
+
+    // 1. Preload Observer: triggers ~1000px before entering viewport to load video data early
+    const preloadObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (videoRef.current && !hasLoadedRef.current) {
+            hasLoadedRef.current = true;
+            videoRef.current.load();
+          }
+        }
+      },
+      {
+        rootMargin: '1000px 0px',
+        threshold: 0
+      }
+    );
+
+    // 2. Playback Observer: controls play/pause based on actual viewport visibility
+    const playbackObserver = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
           if (videoRef.current) {
+            // Ensure video.load() was called if preload didn't catch it
             if (!hasLoadedRef.current) {
               hasLoadedRef.current = true;
               videoRef.current.load();
             }
-            videoRef.current.play().catch(() => { });
+            if (videoRef.current.paused) {
+              const playPromise = videoRef.current.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(() => {});
+              }
+            }
           }
         } else {
-          if (videoRef.current) {
+          setIsVisible(false);
+          if (videoRef.current && !videoRef.current.paused) {
             videoRef.current.pause();
           }
         }
       },
       {
-        threshold: 0.35,
-        rootMargin: '150px 0px'
+        rootMargin: '0px',
+        threshold: 0.35
       }
     );
 
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
+    preloadObserver.observe(el);
+    playbackObserver.observe(el);
 
-    return () => observer.disconnect();
+    return () => {
+      preloadObserver.disconnect();
+      playbackObserver.disconnect();
+      if (videoRef.current && !videoRef.current.paused) {
+        videoRef.current.pause();
+      }
+    };
   }, [videoSrc]);
 
   // Subtle scroll parallax for media INSIDE fixed 16:9 or 9:16 frame (3-8px)
@@ -129,7 +161,7 @@ export const ProjectCard = ({ project, onClick, onCursorHover, onCursorLeave }) 
             ref={videoRef}
             src={videoSrc}
             poster={posterSrc}
-            preload="none"
+            preload="metadata"
             muted
             loop
             playsInline
@@ -172,4 +204,4 @@ export const ProjectCard = ({ project, onClick, onCursorHover, onCursorLeave }) 
       </div>
     </article>
   );
-};
+});

@@ -8,7 +8,7 @@ export const EXPERIENCE_ENTRIES = [
     period: "2026 — PRESENT",
     description: "Crafting visual brand content, dynamic product reels, and social-first campaigns focused on consumer engagement and brand story.",
     highlights: ["Brand Campaigns", "Short-Form Growth", "Visual Editing"],
-    accentPhrases: ["visual brand content", "product reels", "social-first campaigns", "brand story"]
+    accentPhrases: []
   },
   {
     id: "exp-2",
@@ -17,7 +17,7 @@ export const EXPERIENCE_ENTRIES = [
     period: "2023 — PRESENT",
     description: "Spearheaded official event coverage, promotional films, and creative direction for university-scale productions. Conducted workshops and taught video editing and videography to 100+ participants.",
     highlights: ["Cinematography", "Event Aftermovies", "Creative Direction"],
-    accentPhrases: ["event coverage", "promotional films", "creative direction", "100+ participants"]
+    accentPhrases: ["100+ participants"]
   },
   {
     id: "exp-3",
@@ -26,7 +26,7 @@ export const EXPERIENCE_ENTRIES = [
     period: "2025 — PRESENT",
     description: "Partnering with creators, agencies, and emerging brands to deliver end-to-end video editing, cinematography, and visual storytelling.",
     highlights: ["Creator Content", "Visual Styling", "Commercial Reels"],
-    accentPhrases: ["creators", "agencies", "video editing", "cinematography", "visual storytelling"]
+    accentPhrases: []
   }
 ];
 

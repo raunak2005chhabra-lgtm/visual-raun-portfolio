@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { PROJECTS, CATEGORIES } from '../data/projects';
 import { ProjectFilter } from './ProjectFilter';
 import { ProjectCard } from './ProjectCard';
@@ -25,8 +25,19 @@ export const SelectedWork = ({ onCursorHover, onCursorLeave }) => {
     return () => observer.disconnect();
   }, []);
 
-  // Group categories for separated content dividers
-  const workCategories = CATEGORIES.filter(c => c.id !== 'ALL');
+  // Group categories for separated content dividers with stable reference
+  const workCategories = useMemo(() => CATEGORIES.filter(c => c.id !== 'ALL'), []);
+
+  // Pre-filter projects per category with stable memoization
+  const categoryProjectsMap = useMemo(() => {
+    const map = {};
+    workCategories.forEach((category) => {
+      map[category.id] = PROJECTS.filter(
+        (p) => p.category === category.id || p.category.includes(category.id)
+      );
+    });
+    return map;
+  }, [workCategories]);
 
   const handleSelectCategory = (catId) => {
     setActiveCategory(catId);
@@ -70,10 +81,7 @@ export const SelectedWork = ({ onCursorHover, onCursorLeave }) => {
         {/* Visual Archive Grouped By Category Separators */}
         <div className="work-categories-archive">
           {workCategories.map((category) => {
-            // Filter projects belonging to this category
-            const categoryProjects = PROJECTS.filter(
-              (p) => p.category === category.id || p.category.includes(category.id)
-            );
+            const categoryProjects = categoryProjectsMap[category.id] || [];
 
             if (activeCategory !== 'ALL' && activeCategory !== category.id) {
               return null; // When filtering specific category
