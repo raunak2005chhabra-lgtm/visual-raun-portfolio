@@ -6,16 +6,27 @@ export const ProjectCard = ({ project, onClick, onCursorHover, onCursorLeave }) 
   const [parallaxY, setParallaxY] = useState(0);
   const cardRef = useRef(null);
   const videoRef = useRef(null);
+  const hasLoadedRef = useRef(false);
 
   const videoSrc = project.localVideo || project.videoUrl;
 
-  // IntersectionObserver to automatically play video when visible in viewport and pause when offscreen
+  const prevVideoSrcRef = useRef(videoSrc);
+  if (prevVideoSrcRef.current !== videoSrc) {
+    prevVideoSrcRef.current = videoSrc;
+    hasLoadedRef.current = false;
+  }
+
+  // Controlled IntersectionObserver for video loading & playback based on viewport visibility
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
           if (videoRef.current) {
+            if (!hasLoadedRef.current) {
+              hasLoadedRef.current = true;
+              videoRef.current.load();
+            }
             videoRef.current.play().catch(() => { });
           }
         } else {
@@ -24,7 +35,10 @@ export const ProjectCard = ({ project, onClick, onCursorHover, onCursorLeave }) 
           }
         }
       },
-      { threshold: 0.1 }
+      {
+        threshold: 0.35,
+        rootMargin: '150px 0px'
+      }
     );
 
     if (cardRef.current) {
@@ -32,14 +46,7 @@ export const ProjectCard = ({ project, onClick, onCursorHover, onCursorLeave }) 
     }
 
     return () => observer.disconnect();
-  }, []);
-
-  // Ensure video plays continuously whenever visible or media source updates
-  useEffect(() => {
-    if (isVisible && videoRef.current) {
-      videoRef.current.play().catch(() => { });
-    }
-  }, [isVisible, videoSrc]);
+  }, [videoSrc]);
 
   // Subtle scroll parallax for media INSIDE fixed 16:9 or 9:16 frame (3-8px)
   useEffect(() => {
@@ -77,9 +84,6 @@ export const ProjectCard = ({ project, onClick, onCursorHover, onCursorLeave }) 
   const handleMouseEnter = () => {
     setIsHovered(true);
     onCursorHover(videoSrc ? 'WATCH' : 'VIEW');
-    if (videoRef.current && videoRef.current.paused) {
-      videoRef.current.play().catch(() => { });
-    }
   };
 
   const handleMouseLeave = () => {
@@ -119,21 +123,16 @@ export const ProjectCard = ({ project, onClick, onCursorHover, onCursorLeave }) 
           loading="lazy"
         />
 
-        {/* Autoplaying Muted Loop Video - Always playing while visible in viewport */}
+        {/* Autoplaying Muted Loop Video - Controlled via IntersectionObserver */}
         {videoSrc && (
           <video
             ref={videoRef}
             src={videoSrc}
             poster={posterSrc}
-            autoPlay
+            preload="none"
             muted
             loop
             playsInline
-            onCanPlay={() => {
-              if (isVisible && videoRef.current) {
-                videoRef.current.play().catch(() => { });
-              }
-            }}
             className={`uniform-video-preview ${isHovered ? 'video-active' : ''}`}
             style={{
               position: 'absolute',
