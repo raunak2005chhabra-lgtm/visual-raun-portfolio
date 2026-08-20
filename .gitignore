@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Video Optimization Temp Workspaces
+optimized-videos/
+video-backup/
+optimize-videos.bat
+
